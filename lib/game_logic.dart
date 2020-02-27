@@ -98,8 +98,8 @@ class Start2048{
       }}
     for(int i = 0; i < row.length - 1; i++){
       if(row[i] == row[i+1]){
-        row[i] = row[i] + row[i];
-        row.removeAt(i+1);
+        row[i+1] = row[i+1] *2;
+        row.removeAt(i);
         row.insert(row.length - 1, 0);
       }
     }
@@ -109,11 +109,12 @@ class Start2048{
     return row.toList();
   }
 
-  bool checkItGameEnded(array){
-    return (array.find((int element) => element == 2048) != -1 && array.find((int element) => element == 0) != 1);
+  bool checkItGameEnded(){
+    return (board.contains(2048) || !board.contains(0));
   }
 
   bool checkIfValidMovesLeft(List<List<int>> board, List<int> cellPosition){
+
   }
 
   void printBoard(){
