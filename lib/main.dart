@@ -50,8 +50,8 @@ Start2048 gameLogic;
     };
     return listOfMoves[input];
   }
-  double initialX;
-  double initialY;
+  double initialX = 0.0;
+  double initialY = 0.0;
   double distanceX;
   double distanceY;
 
@@ -95,12 +95,12 @@ Start2048 gameLogic;
       ),
       body: Center(
         child: GestureDetector(
-          onPanStart: (details){
-            initialX = details.globalPosition.dx;
-            initialY = details.globalPosition.dy;
-            setState(() {
-            });
-          },
+//          onPanStart: (details){
+//            initialX = details..dx;
+//            initialY = details.globalPosition.dy;
+//            setState(() {
+//            });
+//          },
           onPanUpdate: (DragUpdateDetails details) {
             distanceX= details.delta.dx;
             distanceY= details.delta.dx;
