@@ -4,13 +4,15 @@ void main(){
   List<List<int>> board = [
     [0,0,0,0],
     [0,0,2,0],
-    [0,18,0,0],
+    [0,0,0,0],
     [0,0,0,0],
   ];
   Start2048 game = Start2048(board);
   game.printBoard();
   game.upSwipe();
-
+  game.randomZeroPosition();
+  game.printBoard();
+  game.upSwipe();
   game.randomZeroPosition();
   game.printBoard();
 }
@@ -47,11 +49,11 @@ class Start2048{
   List<List<int>>  transposeArray(array, arrayLength){
     List<List<int>> newArray = [];
     for(var i = 0; i < array.length; i++){
-      newArray.insert(0,[]);
+      newArray.add([]);
     }
     for(var i = 0; i < array.length; i++){
       for(var j = 0; j < arrayLength; j++){
-        newArray[j].insert(0,array[i][j]);
+        newArray[j].add(array[i][j]);
       }
     }
     return newArray;
@@ -79,7 +81,7 @@ class Start2048{
       if(row[i] == row[i+1]){
         row[i] = row[i] + row[i];
         row.removeAt(i+1);
-        row.insert(row.length - 1, 0);
+        row.add(0);
       }
     }
     while(row.length != listLength){

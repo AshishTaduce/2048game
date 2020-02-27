@@ -48,7 +48,7 @@ class _GameBoardState extends State<GameBoard> {
   List<List<int>> board = [
     [0,0,0,0],
     [0,0,2,0],
-    [0,18,0,0],
+    [0,0,0,0],
     [0,0,0,0],
   ];
 
@@ -76,6 +76,7 @@ Start2048 gameLogic;
           setState(() {});},),
         IconButton(icon: Icon(Icons.arrow_drop_down), onPressed:(){
           gameLogic.downSwipe();
+          gameLogic.randomZeroPosition();
           setState(() {});},),
         IconButton(icon: Icon(Icons.arrow_right), onPressed:(){
           gameLogic.rightSwipe();
@@ -115,39 +116,18 @@ class gameRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    List<Widget> cells= [];
+    for(int i = 0; i < 4; i++) cells.add(Container(
+      width: 75,
+      height: 75,
+      padding: const EdgeInsets.all(8),
+      child: Center(child: Text(gameLogic.board[this.rowNumber][i].toString(), style: TextStyle(fontSize: 36),)),
+      color: Colors.teal[100],
+    ),);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.center,
-      children: <Widget>[
-        Container(
-          width: 75,
-          height: 75,
-          padding: const EdgeInsets.all(8),
-          child: Text(gameLogic.board[this.rowNumber][0].toString()),
-          color: Colors.teal[100],
-        ),
-        Container(
-          width: 75,
-          height: 75,
-          padding: const EdgeInsets.all(8),
-          child: Text(gameLogic.board[this.rowNumber][1].toString()),
-          color: Colors.teal[100],
-        ),
-        Container(
-          width: 75,
-          height: 75,
-          padding: const EdgeInsets.all(8),
-          child: Text(gameLogic.board[this.rowNumber][2].toString()),
-          color: Colors.teal[100],
-        ),
-        Container(
-          width: 75,
-          height: 75,
-          padding: const EdgeInsets.all(8),
-          child: Center(child: Text(gameLogic.board[this.rowNumber][3].toString())),
-          color: Colors.teal[100],
-        ),
-      ],
+      children: cells,
     );
   }
 }
