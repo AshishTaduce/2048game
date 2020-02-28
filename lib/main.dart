@@ -95,12 +95,12 @@ Start2048 gameLogic;
       ),
       body: Center(
         child: GestureDetector(
-//          onPanStart: (details){
-//            initialX = details..dx;
-//            initialY = details.globalPosition.dy;
-//            setState(() {
-//            });
-//          },
+          onPanStart: (details){
+            initialX = details.globalPosition.dx;
+            initialY = details.globalPosition.dy;
+            setState(() {
+            });
+          },
           onPanUpdate: (DragUpdateDetails details) {
             distanceX= details.delta.dx;
             distanceY= details.delta.dx;
@@ -108,19 +108,20 @@ Start2048 gameLogic;
             });
           },
           onPanEnd: (details){
-            if (initialX - distanceX < 0) {
+            if (initialX - distanceX > 0) {
               gameLogic.rightSwipe();
             }
-            else if (initialX - distanceX > 0) {
+            else if (initialX - distanceX < 0) {
               gameLogic.leftSwipe();
             }
-            else if (initialY - distanceY < 0) {
+            else if (initialY - distanceY > 0) {
               gameLogic.upSwipe();
             }
-            else if (initialY - distanceY > 0) {
+            else if (initialY - distanceY < 0) {
               gameLogic.downSwipe();
             }
-            if(distanceX != 0 || distanceY != 0) gameLogic.randomZeroPosition();
+            if(distanceX != 0 || distanceY != 0)
+              gameLogic.randomZeroPosition();
             setState(() {
             });
           },

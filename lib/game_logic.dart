@@ -14,6 +14,8 @@ void main(){
   game.printBoard();
   game.upSwipe();
   game.randomZeroPosition();
+  game.printBoard();game.upSwipe();
+  game.randomZeroPosition();
   game.printBoard();
 }
 
@@ -100,7 +102,7 @@ class Start2048{
       if(row[i] == row[i+1]){
         row[i+1] = row[i+1] *2;
         row.removeAt(i);
-        row.insert(row.length - 1, 0);
+        row.insert(0, 0);
       }
     }
     while(row.length != listLength){
