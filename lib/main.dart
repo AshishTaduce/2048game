@@ -28,20 +28,20 @@ class GameBoard extends StatefulWidget {
 
 class _GameBoardState extends State<GameBoard> {
   List<List<int>> board = [
-    [0,0,0,0],
-    [0,0,2,0],
-    [0,0,0,0],
-    [0,0,0,0],
+    [0, 0, 0, 0],
+    [0, 0, 2, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
   ];
 
-Start2048 gameLogic;
+  Start2048 gameLogic;
   @override
   void initState() {
-  gameLogic = Start2048(board);
-  super.initState();
+    gameLogic = Start2048(board);
+    super.initState();
   }
 
-  Function performMove(String input){
+  Function performMove(String input) {
     Map<String, Function> listOfMoves = {
       "up": gameLogic.upSwipe,
       "down": gameLogic.downSwipe,
@@ -50,42 +50,64 @@ Start2048 gameLogic;
     };
     return listOfMoves[input];
   }
-  double initialX = 0.0;
-  double initialY = 0.0;
+
+  double initialX;
+  double initialY;
   double distanceX;
   double distanceY;
 
   @override
   Widget build(BuildContext context) {
     List<Widget> listOfWidgets = [];
-    for(int i = 0; i < 4; i++){
-      listOfWidgets.add(gameRow(gameLogic: gameLogic, rowNumber: i,));
+    for (int i = 0; i < 4; i++) {
+      listOfWidgets.add(gameRow(
+        gameLogic: gameLogic,
+        rowNumber: i,
+      ));
     }
     listOfWidgets.add(Row(
       children: <Widget>[
-        IconButton(icon: Icon(Icons.arrow_left), onPressed:(){
-          gameLogic.leftSwipe();
-          gameLogic.randomZeroPosition();
-          setState(() {});},),
-        IconButton(icon: Icon(Icons.arrow_drop_up), onPressed:() {
-          if(gameLogic.checkItGameEnded()){
-            performMove("up")();
-            gameLogic.randomZeroPosition();
+        IconButton(
+          icon: Icon(Icons.arrow_left),
+          onPressed: () {
+            gameLogic.leftSwipe();
+            gameLogic.addRandomZeros();
             setState(() {});
-          }
-          }),
-        IconButton(icon: Icon(Icons.arrow_drop_down), onPressed:(){
-          performMove("down")();
-          gameLogic.randomZeroPosition();
-          setState(() {});},),
-        IconButton(icon: Icon(Icons.arrow_right), onPressed:(){
-          performMove("right")();
-          gameLogic.randomZeroPosition();
-          setState(() {});},),
-        IconButton(icon: Icon(Icons.access_alarm), onPressed:(){
-          performMove("left")();
-          gameLogic.randomZeroPosition();
-          setState(() {});},),
+          },
+        ),
+        IconButton(
+            icon: Icon(Icons.arrow_drop_up),
+            onPressed: () {
+              if (gameLogic.checkItGameEnded()) {
+                performMove("up")();
+                gameLogic.addRandomZeros();
+                setState(() {});
+              }
+            }),
+        IconButton(
+          icon: Icon(Icons.arrow_drop_down),
+          onPressed: () {
+            performMove("down")();
+            gameLogic.addRandomZeros();
+            setState(() {});
+          },
+        ),
+        IconButton(
+          icon: Icon(Icons.arrow_right),
+          onPressed: () {
+            performMove("right")();
+            gameLogic.addRandomZeros();
+            setState(() {});
+          },
+        ),
+        IconButton(
+          icon: Icon(Icons.access_alarm),
+          onPressed: () {
+            performMove("left")();
+            gameLogic.addRandomZeros();
+            setState(() {});
+          },
+        ),
       ],
     ));
 
@@ -95,40 +117,30 @@ Start2048 gameLogic;
       ),
       body: Center(
         child: GestureDetector(
-          onPanStart: (details){
-            initialX = details.globalPosition.dx;
-            initialY = details.globalPosition.dy;
-            setState(() {
-            });
+          onHorizontalDragEnd: (velocity){
+            print(velocity.primaryVelocity);
+            velocity.primaryVelocity > 0
+                ? gameLogic.rightSwipe()
+                : gameLogic.leftSwipe();
+            gameLogic.addRandomZeros();
+            setState(() {});
           },
-          onPanUpdate: (DragUpdateDetails details) {
-            distanceX= details.delta.dx;
-            distanceY= details.delta.dx;
-            setState(() {
-            });
+
+          onVerticalDragEnd: (velocity){
+            print(velocity.primaryVelocity);
+            velocity.primaryVelocity < 0
+                ? gameLogic.upSwipe()
+                : gameLogic.downSwipe();
+            gameLogic.addRandomZeros();
+            setState(() {});
           },
-          onPanEnd: (details){
-            if (initialX - distanceX > 0) {
-              gameLogic.rightSwipe();
-            }
-            else if (initialX - distanceX < 0) {
-              gameLogic.leftSwipe();
-            }
-            else if (initialY - distanceY > 0) {
-              gameLogic.upSwipe();
-            }
-            else if (initialY - distanceY < 0) {
-              gameLogic.downSwipe();
-            }
-            if(distanceX != 0 || distanceY != 0)
-              gameLogic.randomZeroPosition();
-            setState(() {
-            });
-          },
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: listOfWidgets,
+
+          child: Container(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: listOfWidgets,
+            ),
           ),
         ),
       ),
@@ -138,7 +150,7 @@ Start2048 gameLogic;
 
 class gameRow extends StatelessWidget {
   int rowNumber;
-   gameRow({
+  gameRow({
     Key key,
     @required this.gameLogic,
     @required this.rowNumber,
@@ -148,14 +160,21 @@ class gameRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> cells= [];
-    for(int i = 0; i < 4; i++) cells.add(Container(
-      width: 75,
-      height: 75,
-      padding: const EdgeInsets.all(8),
-      child: Center(child: Text(gameLogic.board[this.rowNumber][i].toString(), style: TextStyle(fontSize: 36),)),
-      color: Colors.teal[100],
-    ),);
+    List<Widget> cells = [];
+    for (int i = 0; i < 4; i++)
+      cells.add(
+        Container(
+          width: 75,
+          height: 75,
+          padding: const EdgeInsets.all(8),
+          child: Center(
+              child: Text(
+            gameLogic.board[this.rowNumber][i].toString(),
+            style: TextStyle(fontSize: 36),
+          )),
+          color: Colors.teal[100],
+        ),
+      );
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.center,

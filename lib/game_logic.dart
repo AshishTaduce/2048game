@@ -10,12 +10,12 @@ void main(){
   Start2048 game = Start2048(board);
   game.printBoard();
   game.upSwipe();
-  game.randomZeroPosition();
+  game.addRandomZeros();
   game.printBoard();
   game.upSwipe();
-  game.randomZeroPosition();
+  game.addRandomZeros();
   game.printBoard();game.upSwipe();
-  game.randomZeroPosition();
+  game.addRandomZeros();
   game.printBoard();
 }
 
@@ -23,7 +23,7 @@ class Start2048{
   List<List<int>> board;
   Start2048(this.board);
 
-  void randomZeroPosition(){
+  void addRandomZeros(){
     final _random = new Random();
     List<List<int>> possiblePositions = [];
     for(int i = 0; i < board.length; i++){
