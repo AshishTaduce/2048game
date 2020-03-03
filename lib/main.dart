@@ -26,22 +26,30 @@ class GameBoard extends StatefulWidget {
   _GameBoardState createState() => _GameBoardState();
 }
 
-class _GameBoardState extends State<GameBoard> {
+class _GameBoardState extends State<GameBoard> with SingleTickerProviderStateMixin{
+  AnimationController _controller;
+  CurvedAnimation _curveOut;
+  CurvedAnimation _curveIn;
+
+  Start2048 gameLogic;
+  @override
+  void initState() {
+    _controller = AnimationController(vsync: this, duration: Duration(milliseconds: 1200));
+    _controller.addListener((){
+      if(_controller.value > 0.8)
+    });
+    _curveOut = CurvedAnimation(parent: _controller, curve: Curves.linear);
+
+    gameLogic = Start2048(board);
+    gameLogic.addRandomTwos();
+    super.initState();
+  }
   List<List<int>> board = [
     [0, 0, 0, 0],
     [0, 0, 0, 0],
     [0, 0, 0, 0],
     [0, 0, 0, 0],
   ];
-
-  Start2048 gameLogic;
-  @override
-  void initState() {
-    gameLogic = Start2048(board);
-    gameLogic.addRandomTwos();
-    super.initState();
-  }
-
   double initialX;
   double initialY;
   double distanceX;
@@ -52,6 +60,7 @@ class _GameBoardState extends State<GameBoard> {
     List<Widget> listOfWidgets = [];
     for (int i = 0; i < 4; i++) {
       listOfWidgets.add(gameRow(
+        curveAnimation: _curveOut,
         gameLogic: gameLogic,
         rowNumber: i,
       ));
@@ -76,11 +85,11 @@ class _GameBoardState extends State<GameBoard> {
         },
       );
     }
-    double horizontal;
-    double verticle;
 
     return Scaffold(
+      backgroundColor: Colors.blueAccent,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
         title: Text(widget.title),
       ),
       body: GestureDetector(
@@ -89,7 +98,7 @@ class _GameBoardState extends State<GameBoard> {
         onHorizontalDragUpdate: (details) => distanceX = details.globalPosition.dx - initialX,
         onVerticalDragStart: (details) => initialY = details.globalPosition.dy,
         onVerticalDragUpdate: (details) => distanceY = details.globalPosition.dy - initialY,
-        onHorizontalDragEnd: (velocity) {
+        onHorizontalDragEnd: (velocity) async{
           print("Horizontal: $distanceX");
           if(gameLogic.checkItGameEnded() ){
               distanceX > 0
@@ -101,15 +110,20 @@ class _GameBoardState extends State<GameBoard> {
           {showGameEndDialog(context);
           gameLogic.reset();
           }
+          await _controller.forward();
+          _controller.reset();
+
           setState(() {});
         },
-        onVerticalDragEnd: (velocity) {
+        onVerticalDragEnd: (velocity) async{
           if(gameLogic.checkItGameEnded() ){
             print("Verticle: $distanceY");
             distanceY < 0
                 ? gameLogic.upSwipe()
                 : gameLogic.downSwipe();
             gameLogic.addRandomTwos();
+            await _controller.forward();
+            _controller.reset();
           }
           else
             {showGameEndDialog(context);
@@ -118,12 +132,14 @@ class _GameBoardState extends State<GameBoard> {
           setState(() {});
         },
         child: Container(
-          color: Colors.red,
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: listOfWidgets,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: listOfWidgets,
+              ),
             ),
           ),
         ),
@@ -134,8 +150,11 @@ class _GameBoardState extends State<GameBoard> {
 
 class gameRow extends StatelessWidget {
   int rowNumber;
+  CurvedAnimation curveAnimation;
   gameRow({
     Key key,
+
+    @required this.curveAnimation,
     @required this.gameLogic,
     @required this.rowNumber,
   }) : super(key: key);
@@ -150,15 +169,24 @@ class gameRow extends StatelessWidget {
         Container(
           width: 75,
           height: 75,
-          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            color: Colors.teal,
+          ),
           child: Center(
-              child: Text(
+              child: SlideTransition(
+               position: Tween<Offset>(
+                 begin: Offset.zero,
+                 end: Offset(1.0, 1.0),
+               ).animate(curveAnimation),
+                child: Text(
             gameLogic.board[this.rowNumber][i].toString(),
-            style: TextStyle(fontSize: 36),
-          )),
-          color: Colors.teal[100],
+            style: TextStyle(fontSize: 36, color: Colors.white),
+          ),
+              )),
         ),
       );
+//    https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTEHYlZnGhpKufHZIMjKgAgyeAdnNMzf6sPQr1Xs81z3G8eGgYB
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.center,
