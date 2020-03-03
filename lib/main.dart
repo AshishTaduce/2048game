@@ -29,7 +29,7 @@ class GameBoard extends StatefulWidget {
 class _GameBoardState extends State<GameBoard> {
   List<List<int>> board = [
     [0, 0, 0, 0],
-    [0, 0, 2, 0],
+    [0, 0, 0, 0],
     [0, 0, 0, 0],
     [0, 0, 0, 0],
   ];
@@ -38,17 +38,8 @@ class _GameBoardState extends State<GameBoard> {
   @override
   void initState() {
     gameLogic = Start2048(board);
+    gameLogic.addRandomTwos();
     super.initState();
-  }
-
-  Function performMove(String input) {
-    Map<String, Function> listOfMoves = {
-      "up": gameLogic.upSwipe,
-      "down": gameLogic.downSwipe,
-      "left": gameLogic.leftSwipe,
-      "right": gameLogic.rightSwipe,
-    };
-    return listOfMoves[input];
   }
 
   double initialX;
@@ -65,77 +56,70 @@ class _GameBoardState extends State<GameBoard> {
         rowNumber: i,
       ));
     }
-    listOfWidgets.add(Row(
-      children: <Widget>[
-        IconButton(
-          icon: Icon(Icons.arrow_left),
-          onPressed: () {
-            gameLogic.leftSwipe();
-            gameLogic.addRandomZeros();
-            setState(() {});
-          },
-        ),
-        IconButton(
-            icon: Icon(Icons.arrow_drop_up),
-            onPressed: () {
-              if (gameLogic.checkItGameEnded()) {
-                performMove("up")();
-                gameLogic.addRandomZeros();
-                setState(() {});
-              }
-            }),
-        IconButton(
-          icon: Icon(Icons.arrow_drop_down),
-          onPressed: () {
-            performMove("down")();
-            gameLogic.addRandomZeros();
-            setState(() {});
-          },
-        ),
-        IconButton(
-          icon: Icon(Icons.arrow_right),
-          onPressed: () {
-            performMove("right")();
-            gameLogic.addRandomZeros();
-            setState(() {});
-          },
-        ),
-        IconButton(
-          icon: Icon(Icons.access_alarm),
-          onPressed: () {
-            performMove("left")();
-            gameLogic.addRandomZeros();
-            setState(() {});
-          },
-        ),
-      ],
-    ));
+    Future<void> showGameEndDialog(BuildContext context) {
+      return showDialog<void>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Game ended'),
+            content: const Text('Please reset the game'),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('Reset'),
+                onPressed: () {
+                  gameLogic.reset();
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+    double horizontal;
+    double verticle;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Center(
-        child: GestureDetector(
-          onHorizontalDragEnd: (velocity){
-            print(velocity.primaryVelocity);
-            velocity.primaryVelocity > 0
+      body: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onHorizontalDragStart: (details) => initialX = details.globalPosition.dx,
+        onHorizontalDragUpdate: (details) => distanceX = details.globalPosition.dx - initialX,
+        onVerticalDragStart: (details) => initialY = details.globalPosition.dy,
+        onVerticalDragUpdate: (details) => distanceY = details.globalPosition.dy - initialY,
+        onHorizontalDragEnd: (velocity) {
+          print("Horizontal: $distanceX");
+          if(gameLogic.checkItGameEnded() ){
+              distanceX > 0
                 ? gameLogic.rightSwipe()
                 : gameLogic.leftSwipe();
-            gameLogic.addRandomZeros();
-            setState(() {});
-          },
-
-          onVerticalDragEnd: (velocity){
-            print(velocity.primaryVelocity);
-            velocity.primaryVelocity < 0
+              gameLogic.addRandomTwos();
+          }
+          else
+          {showGameEndDialog(context);
+          gameLogic.reset();
+          }
+          setState(() {});
+        },
+        onVerticalDragEnd: (velocity) {
+          if(gameLogic.checkItGameEnded() ){
+            print("Verticle: $distanceY");
+            distanceY < 0
                 ? gameLogic.upSwipe()
                 : gameLogic.downSwipe();
-            gameLogic.addRandomZeros();
-            setState(() {});
-          },
-
-          child: Container(
+            gameLogic.addRandomTwos();
+          }
+          else
+            {showGameEndDialog(context);
+            gameLogic.reset();
+            }
+          setState(() {});
+        },
+        child: Container(
+          color: Colors.red,
+          child: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -182,3 +166,4 @@ class gameRow extends StatelessWidget {
     );
   }
 }
+

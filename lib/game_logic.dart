@@ -10,12 +10,12 @@ void main(){
   Start2048 game = Start2048(board);
   game.printBoard();
   game.upSwipe();
-  game.addRandomZeros();
+  game.addRandomTwos();
   game.printBoard();
   game.upSwipe();
-  game.addRandomZeros();
+  game.addRandomTwos();
   game.printBoard();game.upSwipe();
-  game.addRandomZeros();
+  game.addRandomTwos();
   game.printBoard();
 }
 
@@ -23,7 +23,7 @@ class Start2048{
   List<List<int>> board;
   Start2048(this.board);
 
-  void addRandomZeros(){
+  void addRandomTwos(){
     final _random = new Random();
     List<List<int>> possiblePositions = [];
     for(int i = 0; i < board.length; i++){
@@ -61,6 +61,11 @@ class Start2048{
     return newArray;
   }
 
+  void reset(){
+    board = [[0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0], ];
+    addRandomTwos();
+  }
+
   void  upSwipe(){
     board = transposeArray(board,board.length);
     leftSwipe();
@@ -78,7 +83,8 @@ class Start2048{
     while(row.contains(0)){
       for(int j = 0; j < row.length; j++){
         if(row[j] == 0) row.removeAt(j);
-      }}
+      }
+    }
     for(int i = 0; i < row.length - 1; i++){
       if(row[i] == row[i+1]){
         row[i] = row[i] + row[i];
@@ -115,8 +121,30 @@ class Start2048{
     return (board.contains(2048) || !board.contains(0));
   }
 
-  bool checkIfValidMovesLeft(List<List<int>> board, List<int> cellPosition){
+  bool checkIfValidMovesLeft(List<List<int>> board,){
+    List<List<int>>tempBoard = List.from(board);
+    Start2048 tempGame = Start2048(tempBoard);
+    tempGame.leftSwipe();
+    if(!checkIfSameBoard(board, tempBoard)) return true;
+    else tempGame.board = List.from(board);
+    tempGame.rightSwipe();
+    if(!checkIfSameBoard(board, tempBoard)) return true;
+    else tempGame.board = List.from(board);
+    tempGame.upSwipe();
+    if(!checkIfSameBoard(board, tempBoard)) return true;
+    else tempGame.board = List.from(board);
+    tempGame.downSwipe();
+    if(!checkIfSameBoard(board, tempBoard)) return true;
+    else return false;
+  }
 
+  bool checkIfSameBoard(List<List<int>>board, List<List<int>>tempBoard){
+    for(int i = 0; i < board.length; i++){
+      for(int j = 0; j < board.length; j++){
+        if(board[i][j] == tempBoard[i][j]) return false;
+      }
+    }
+    return true;
   }
 
   void printBoard(){
