@@ -29,8 +29,6 @@ class GameBoard extends StatefulWidget {
 class _GameBoardState extends State<GameBoard>
     with SingleTickerProviderStateMixin {
   AnimationController _controller;
-  CurvedAnimation _curveOut;
-  CurvedAnimation _curveIn;
 
   Start2048 gameLogic;
   @override
@@ -111,15 +109,12 @@ class _GameBoardState extends State<GameBoard>
           if (gameLogic.checkItGameEnded()) {
             distanceX > 0 ? gameLogic.rightSwipe() : gameLogic.leftSwipe();
             gameLogic.addRandomTwos();
-            gameLogic.updateBoard();
-//            await _controller.forward();
-//            _controller.reset();
+            await _controller.forward();
+            _controller.reset();
           } else {
             showGameEndDialog(context);
             gameLogic.reset();
           }
-          await _controller.forward();
-          _controller.reset();
 
           setState(() {});
         },
@@ -128,7 +123,6 @@ class _GameBoardState extends State<GameBoard>
             print("Verticle: $distanceY");
             distanceY < 0 ? gameLogic.upSwipe() : gameLogic.downSwipe();
             gameLogic.addRandomTwos();
-            gameLogic.updateBoard();
             await _controller.forward();
             _controller.reset();
           } else {

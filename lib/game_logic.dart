@@ -25,10 +25,6 @@ class Start2048{
 
   Start2048(this.board,);
 
-  void updateBoard(){
-    oldBoard = board;
-  }
-
   void addRandomTwos(){
     final _random = new Random();
     List<List<int>> possiblePositions = [];
