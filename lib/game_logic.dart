@@ -7,12 +7,6 @@ void main(){
     [0,0,0,0],
     [0,0,0,0],
   ];
-  List<List<int>> oldBoard = [
-    [0,0,0,0],
-    [0,0,2,0],
-    [0,0,0,0],
-    [0,0,0,0],
-  ];
   Start2048 game = Start2048(board,);
   game.printBoard();
   game.upSwipe();
@@ -159,11 +153,7 @@ class Start2048{
     return true;
   }
 
-
-
   void printBoard(){
     print(board);
   }
-
 }
-

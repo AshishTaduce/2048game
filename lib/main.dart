@@ -40,8 +40,6 @@ class _GameBoardState extends State<GameBoard>
     _controller.addListener(() {
       if (_controller.value > 0.8) {}
     });
-    _curveOut = CurvedAnimation(parent: _controller, curve: Curves.linear);
-
     gameLogic = Start2048(
       board,
     );
@@ -67,7 +65,7 @@ class _GameBoardState extends State<GameBoard>
     List<Widget> listOfWidgets = [];
     for (int i = 0; i < 4; i++) {
       listOfWidgets.add(gameRow(
-        animationControlller: _controller,
+        animationController: _controller,
         gameLogic: gameLogic,
         rowNumber: i,
       ));
@@ -158,10 +156,10 @@ class _GameBoardState extends State<GameBoard>
 
 class gameRow extends StatelessWidget {
   int rowNumber;
-  AnimationController animationControlller;
+  AnimationController animationController;
   gameRow({
     Key key,
-    @required this.animationControlller,
+    @required this.animationController,
     @required this.gameLogic,
     @required this.rowNumber,
   }) : super(key: key);
@@ -174,7 +172,7 @@ class gameRow extends StatelessWidget {
     for (int i = 0; i < 4; i++)
       cells.add(
         SingleCell(
-            controller: animationControlller,
+            controller: animationController,
             cellValue: gameLogic.board[rowNumber][i],),
       );
 //    https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTEHYlZnGhpKufHZIMjKgAgyeAdnNMzf6sPQr1Xs81z3G8eGgYB
@@ -213,47 +211,63 @@ class _SingleCellState extends State<SingleCell>
       }
     });
     _curveOut =
-        CurvedAnimation(parent: widget.controller, curve: Curves.linear);
+        CurvedAnimation(parent: widget.controller, curve: Curves.linearToEaseOut);
     super.initState();
   }
+//  @override
+//  void dispose(){
+//    widget.controller.removeListener(listener);
+//  }
+
 
   CurvedAnimation _curveOut;
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 75,
-      height: 75,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: Colors.teal,
-      ),
-      child: Center(
-          child: Stack(
-        children: <Widget>[
-          SlideTransition(
-            position: Tween<Offset>(
-              begin: Offset(-2, 0.0),
-              end: Offset(0.0, 0.0),
-            ).animate(_curveOut),
-            child: Text(
-              widget.cellValue.toString(),
-              style: TextStyle(fontSize: 36, color: Colors.white),
-            ),
-          ),
-          Positioned.fill(
-            child: SlideTransition(
-              position: Tween<Offset>(
-                begin: Offset.zero,
-                end: Offset(2.0, 0.0),
-              ).animate(_curveOut),
-              child: Text(
-                previousValue.toString(),
-                style: TextStyle(fontSize: 36, color: Colors.white),
+    return  ClipRect(
+//      size: Size(75, 75),
+      child: Container(
+        width: 75,
+        height: 75,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: Colors.teal,
+        ),
+        child: Center(
+              child: Stack(
+          children: <Widget>[
+              Positioned(
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: Offset(-2, 0.0),
+                    end: Offset(0.0, 0.0),
+                  ).animate(_curveOut),
+                  child: Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Text(
+                      widget.cellValue.toString(),
+                      style: TextStyle(fontSize: 36, color: Colors.white),
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ),
-        ],
-      )),
+              Positioned.fill(
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: Offset.zero,
+                    end: Offset(2.0, 0.0),
+                  ).animate(_curveOut),
+                  child: Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Text(
+                      previousValue.toString(),
+                      style: TextStyle(fontSize: 36, color: Colors.white),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+            )),
     );
   }
 }
