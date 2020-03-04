@@ -26,7 +26,8 @@ class GameBoard extends StatefulWidget {
   _GameBoardState createState() => _GameBoardState();
 }
 
-class _GameBoardState extends State<GameBoard> with SingleTickerProviderStateMixin{
+class _GameBoardState extends State<GameBoard>
+    with SingleTickerProviderStateMixin {
   AnimationController _controller;
   CurvedAnimation _curveOut;
   CurvedAnimation _curveIn;
@@ -34,22 +35,28 @@ class _GameBoardState extends State<GameBoard> with SingleTickerProviderStateMix
   Start2048 gameLogic;
   @override
   void initState() {
-    _controller = AnimationController(vsync: this, duration: Duration(milliseconds: 1200));
-    _controller.addListener((){
-      if(_controller.value > 0.8)
+    _controller = AnimationController(
+        vsync: this, duration: Duration(milliseconds: 1200));
+    _controller.addListener(() {
+      if (_controller.value > 0.8) {}
     });
     _curveOut = CurvedAnimation(parent: _controller, curve: Curves.linear);
 
-    gameLogic = Start2048(board);
+    gameLogic = Start2048(
+      board,
+    );
     gameLogic.addRandomTwos();
+    gameLogic.updateBoard();
     super.initState();
   }
+
   List<List<int>> board = [
     [0, 0, 0, 0],
     [0, 0, 0, 0],
     [0, 0, 0, 0],
     [0, 0, 0, 0],
   ];
+
   double initialX;
   double initialY;
   double distanceX;
@@ -60,7 +67,7 @@ class _GameBoardState extends State<GameBoard> with SingleTickerProviderStateMix
     List<Widget> listOfWidgets = [];
     for (int i = 0; i < 4; i++) {
       listOfWidgets.add(gameRow(
-        curveAnimation: _curveOut,
+        animationControlller: _controller,
         gameLogic: gameLogic,
         rowNumber: i,
       ));
@@ -94,41 +101,40 @@ class _GameBoardState extends State<GameBoard> with SingleTickerProviderStateMix
       ),
       body: GestureDetector(
         behavior: HitTestBehavior.translucent,
-        onHorizontalDragStart: (details) => initialX = details.globalPosition.dx,
-        onHorizontalDragUpdate: (details) => distanceX = details.globalPosition.dx - initialX,
+        onHorizontalDragStart: (details) =>
+            initialX = details.globalPosition.dx,
+        onHorizontalDragUpdate: (details) =>
+            distanceX = details.globalPosition.dx - initialX,
         onVerticalDragStart: (details) => initialY = details.globalPosition.dy,
-        onVerticalDragUpdate: (details) => distanceY = details.globalPosition.dy - initialY,
-        onHorizontalDragEnd: (velocity) async{
+        onVerticalDragUpdate: (details) =>
+            distanceY = details.globalPosition.dy - initialY,
+        onHorizontalDragEnd: (velocity) async {
           print("Horizontal: $distanceX");
-          if(gameLogic.checkItGameEnded() ){
-              distanceX > 0
-                ? gameLogic.rightSwipe()
-                : gameLogic.leftSwipe();
-              gameLogic.addRandomTwos();
-          }
-          else
-          {showGameEndDialog(context);
-          gameLogic.reset();
+          if (gameLogic.checkItGameEnded()) {
+            distanceX > 0 ? gameLogic.rightSwipe() : gameLogic.leftSwipe();
+            gameLogic.addRandomTwos();
+            gameLogic.updateBoard();
+          } else {
+            showGameEndDialog(context);
+            gameLogic.reset();
           }
           await _controller.forward();
           _controller.reset();
 
           setState(() {});
         },
-        onVerticalDragEnd: (velocity) async{
-          if(gameLogic.checkItGameEnded() ){
+        onVerticalDragEnd: (velocity) async {
+          if (gameLogic.checkItGameEnded()) {
             print("Verticle: $distanceY");
-            distanceY < 0
-                ? gameLogic.upSwipe()
-                : gameLogic.downSwipe();
+            distanceY < 0 ? gameLogic.upSwipe() : gameLogic.downSwipe();
             gameLogic.addRandomTwos();
             await _controller.forward();
+            gameLogic.updateBoard();
             _controller.reset();
-          }
-          else
-            {showGameEndDialog(context);
+          } else {
+            showGameEndDialog(context);
             gameLogic.reset();
-            }
+          }
           setState(() {});
         },
         child: Container(
@@ -150,11 +156,10 @@ class _GameBoardState extends State<GameBoard> with SingleTickerProviderStateMix
 
 class gameRow extends StatelessWidget {
   int rowNumber;
-  CurvedAnimation curveAnimation;
+  AnimationController animationControlller;
   gameRow({
     Key key,
-
-    @required this.curveAnimation,
+    @required this.animationControlller,
     @required this.gameLogic,
     @required this.rowNumber,
   }) : super(key: key);
@@ -166,25 +171,9 @@ class gameRow extends StatelessWidget {
     List<Widget> cells = [];
     for (int i = 0; i < 4; i++)
       cells.add(
-        Container(
-          width: 75,
-          height: 75,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            color: Colors.teal,
-          ),
-          child: Center(
-              child: SlideTransition(
-               position: Tween<Offset>(
-                 begin: Offset.zero,
-                 end: Offset(1.0, 1.0),
-               ).animate(curveAnimation),
-                child: Text(
-            gameLogic.board[this.rowNumber][i].toString(),
-            style: TextStyle(fontSize: 36, color: Colors.white),
-          ),
-              )),
-        ),
+        SingleCell(
+            controller: animationControlller,
+            cellValue: gameLogic.board[rowNumber][i],),
       );
 //    https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTEHYlZnGhpKufHZIMjKgAgyeAdnNMzf6sPQr1Xs81z3G8eGgYB
     return Row(
@@ -195,3 +184,75 @@ class gameRow extends StatelessWidget {
   }
 }
 
+class SingleCell extends StatefulWidget {
+  const SingleCell({
+    Key key,
+    @required this.controller,
+    @required this.cellValue,
+  }) : super(key: key);
+  final AnimationController controller;
+  final int cellValue;
+
+  @override
+  _SingleCellState createState() => _SingleCellState();
+}
+
+class _SingleCellState extends State<SingleCell>
+    with SingleTickerProviderStateMixin {
+  int previousValue = 0;
+  @override
+  void initState() {
+    print("called init");
+    // TODO: implement initState
+//    previousValue = widget.gameLogic.board[this.widget.rowNumber][widget.index];
+    widget.controller.addStatusListener((status) {
+      if (widget.controller.isCompleted) {
+        previousValue =
+            widget.cellValue;
+      }
+    });
+    _curveOut =
+        CurvedAnimation(parent: widget.controller, curve: Curves.linear);
+    super.initState();
+  }
+
+  CurvedAnimation _curveOut;
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 75,
+      height: 75,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        color: Colors.teal,
+      ),
+      child: Center(
+          child: Stack(
+        children: <Widget>[
+          SlideTransition(
+            position: Tween<Offset>(
+              begin: Offset(-2, 0.0),
+              end: Offset(0.0, 0.0),
+            ).animate(_curveOut),
+            child: Text(
+              widget.cellValue.toString(),
+              style: TextStyle(fontSize: 36, color: Colors.white),
+            ),
+          ),
+          Positioned.fill(
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: Offset.zero,
+                end: Offset(2.0, 0.0),
+              ).animate(_curveOut),
+              child: Text(
+                previousValue.toString(),
+                style: TextStyle(fontSize: 36, color: Colors.white),
+              ),
+            ),
+          ),
+        ],
+      )),
+    );
+  }
+}

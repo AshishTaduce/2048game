@@ -7,7 +7,13 @@ void main(){
     [0,0,0,0],
     [0,0,0,0],
   ];
-  Start2048 game = Start2048(board);
+  List<List<int>> oldBoard = [
+    [0,0,0,0],
+    [0,0,2,0],
+    [0,0,0,0],
+    [0,0,0,0],
+  ];
+  Start2048 game = Start2048(board,);
   game.printBoard();
   game.upSwipe();
   game.addRandomTwos();
@@ -21,7 +27,13 @@ void main(){
 
 class Start2048{
   List<List<int>> board;
-  Start2048(this.board);
+  List<List<int>> oldBoard;
+
+  Start2048(this.board,);
+
+  void updateBoard(){
+    oldBoard = board;
+  }
 
   void addRandomTwos(){
     final _random = new Random();
@@ -123,7 +135,7 @@ class Start2048{
 
   bool checkIfValidMovesLeft(List<List<int>> board,){
     List<List<int>>tempBoard = List.from(board);
-    Start2048 tempGame = Start2048(tempBoard);
+    Start2048 tempGame = Start2048(tempBoard,);
     tempGame.leftSwipe();
     if(!checkIfSameBoard(board, tempBoard)) return true;
     else tempGame.board = List.from(board);
@@ -146,6 +158,8 @@ class Start2048{
     }
     return true;
   }
+
+
 
   void printBoard(){
     print(board);
