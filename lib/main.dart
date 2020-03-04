@@ -35,14 +35,10 @@ class _GameBoardState extends State<GameBoard>
   void initState() {
     _controller = AnimationController(
         vsync: this, duration: Duration(milliseconds: 1200));
-    _controller.addListener(() {
-      if (_controller.value > 0.8) {}
-    });
     gameLogic = Start2048(
       board,
     );
     gameLogic.addRandomTwos();
-    gameLogic.updateBoard();
     super.initState();
   }
 
@@ -105,6 +101,7 @@ class _GameBoardState extends State<GameBoard>
         onVerticalDragUpdate: (details) =>
             distanceY = details.globalPosition.dy - initialY,
         onHorizontalDragEnd: (velocity) async {
+          setState(() {});
           print("Horizontal: $distanceX");
           if (gameLogic.checkItGameEnded()) {
             distanceX > 0 ? gameLogic.rightSwipe() : gameLogic.leftSwipe();
@@ -115,10 +112,9 @@ class _GameBoardState extends State<GameBoard>
             showGameEndDialog(context);
             gameLogic.reset();
           }
-
-          setState(() {});
         },
         onVerticalDragEnd: (velocity) async {
+          setState(() {});
           if (gameLogic.checkItGameEnded()) {
             print("Verticle: $distanceY");
             distanceY < 0 ? gameLogic.upSwipe() : gameLogic.downSwipe();
@@ -129,7 +125,6 @@ class _GameBoardState extends State<GameBoard>
             showGameEndDialog(context);
             gameLogic.reset();
           }
-          setState(() {});
         },
         child: Container(
           child: Padding(
@@ -202,23 +197,24 @@ class _SingleCellState extends State<SingleCell>
     widget.controller.addStatusListener((AnimationStatus  status) {
       if (status == AnimationStatus.completed) {
         previousValue = widget.cellValue;
+        setState(() {
+        });
       }
     });
     _curveOut =
         CurvedAnimation(parent: widget.controller, curve: Curves.linearToEaseOut);
     super.initState();
   }
-//  @override
-//  void dispose(){
-//    widget.controller.removeListener(listener);
-//  }
+  @override
+  void dispose(){
+//    widget.controller.removeListener();
+  }
 
 
   CurvedAnimation _curveOut;
   @override
   Widget build(BuildContext context) {
     return  ClipRect(
-//      size: Size(75, 75),
       child: Container(
         width: 75,
         height: 75,
