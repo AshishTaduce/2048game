@@ -114,6 +114,8 @@ class _GameBoardState extends State<GameBoard>
             distanceX > 0 ? gameLogic.rightSwipe() : gameLogic.leftSwipe();
             gameLogic.addRandomTwos();
             gameLogic.updateBoard();
+//            await _controller.forward();
+//            _controller.reset();
           } else {
             showGameEndDialog(context);
             gameLogic.reset();
@@ -128,8 +130,8 @@ class _GameBoardState extends State<GameBoard>
             print("Verticle: $distanceY");
             distanceY < 0 ? gameLogic.upSwipe() : gameLogic.downSwipe();
             gameLogic.addRandomTwos();
-            await _controller.forward();
             gameLogic.updateBoard();
+            await _controller.forward();
             _controller.reset();
           } else {
             showGameEndDialog(context);
@@ -204,11 +206,10 @@ class _SingleCellState extends State<SingleCell>
   void initState() {
     print("called init");
     // TODO: implement initState
-//    previousValue = widget.gameLogic.board[this.widget.rowNumber][widget.index];
-    widget.controller.addStatusListener((status) {
-      if (widget.controller.isCompleted) {
-        previousValue =
-            widget.cellValue;
+    previousValue = widget.cellValue;
+    widget.controller.addStatusListener((AnimationStatus  status) {
+      if (status == AnimationStatus.completed) {
+        previousValue = widget.cellValue;
       }
     });
     _curveOut =
