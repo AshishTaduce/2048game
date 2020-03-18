@@ -42,6 +42,8 @@ class _GameBoardState extends State<GameBoard>
     super.initState();
   }
 
+  String direction = '';
+
   List<List<int>> board = [
     [0, 0, 0, 0],
     [0, 0, 0, 0],
@@ -59,6 +61,7 @@ class _GameBoardState extends State<GameBoard>
     List<Widget> listOfWidgets = [];
     for (int i = 0; i < 4; i++) {
       listOfWidgets.add(gameRow(
+        direction: direction,
         animationController: _controller,
         gameLogic: gameLogic,
         rowNumber: i,
@@ -94,7 +97,7 @@ class _GameBoardState extends State<GameBoard>
       body: GestureDetector(
         behavior: HitTestBehavior.translucent,
         onHorizontalDragStart: (details) =>
-            initialX = details.globalPosition.dx,
+        initialX = details.globalPosition.dx,
         onHorizontalDragUpdate: (details) =>
             distanceX = details.globalPosition.dx - initialX,
         onVerticalDragStart: (details) => initialY = details.globalPosition.dy,
@@ -102,6 +105,8 @@ class _GameBoardState extends State<GameBoard>
             distanceY = details.globalPosition.dy - initialY,
         onHorizontalDragEnd: (velocity) async {
           setState(() {});
+          direction = distanceX > 0 ? 'right' : 'left';
+          print('Direction is $direction');
           print("Horizontal: $distanceX");
           if (gameLogic.checkItGameEnded()) {
             distanceX > 0 ? gameLogic.rightSwipe() : gameLogic.leftSwipe();
@@ -115,6 +120,8 @@ class _GameBoardState extends State<GameBoard>
         },
         onVerticalDragEnd: (velocity) async {
           setState(() {});
+          direction = distanceY < 0 ? 'up' : 'down';
+          print('Direction is $direction');
           if (gameLogic.checkItGameEnded()) {
             print("Verticle: $distanceY");
             distanceY < 0 ? gameLogic.upSwipe() : gameLogic.downSwipe();
@@ -126,6 +133,7 @@ class _GameBoardState extends State<GameBoard>
             gameLogic.reset();
           }
         },
+
         child: Container(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -145,10 +153,12 @@ class _GameBoardState extends State<GameBoard>
 
 class gameRow extends StatelessWidget {
   int rowNumber;
+  String direction;
   AnimationController animationController;
   gameRow({
     Key key,
     @required this.animationController,
+    @required this.direction,
     @required this.gameLogic,
     @required this.rowNumber,
   }) : super(key: key);
@@ -162,7 +172,9 @@ class gameRow extends StatelessWidget {
       cells.add(
         SingleCell(
             controller: animationController,
-            cellValue: gameLogic.board[rowNumber][i],),
+            cellValue: gameLogic.board[rowNumber][i],
+            animDirection: direction,
+        ),
       );
 //    https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTEHYlZnGhpKufHZIMjKgAgyeAdnNMzf6sPQr1Xs81z3G8eGgYB
     return Row(
@@ -174,13 +186,23 @@ class gameRow extends StatelessWidget {
 }
 
 class SingleCell extends StatefulWidget {
-  const SingleCell({
+  SingleCell({
     Key key,
     @required this.controller,
+    @required this.animDirection,
     @required this.cellValue,
   }) : super(key: key);
   final AnimationController controller;
   final int cellValue;
+  String animDirection;
+
+  Map<String, List<Offset>> offsetForAnim ={
+    'left': [Offset(2, 0), Offset(-2,0)],
+    'right': [Offset(-2, 0), Offset(2,0)],
+    'up': [Offset(0, 2), Offset(-0,-2)],
+    'down': [Offset(0, -2), Offset(-0,2)],
+  };
+
 
   @override
   _SingleCellState createState() => _SingleCellState();
@@ -203,6 +225,8 @@ class _SingleCellState extends State<SingleCell>
     });
     _curveOut =
         CurvedAnimation(parent: widget.controller, curve: Curves.linearToEaseOut);
+    if(widget.animDirection == null)
+      widget.animDirection = 'left';
     super.initState();
   }
   @override
@@ -228,8 +252,8 @@ class _SingleCellState extends State<SingleCell>
               Positioned(
                 child: SlideTransition(
                   position: Tween<Offset>(
-                    begin: Offset(-2, 0.0),
-                    end: Offset(0.0, 0.0),
+                    begin: widget.offsetForAnim[widget.animDirection][0],
+                    end: Offset.zero,
                   ).animate(_curveOut),
                   child: Padding(
                     padding: EdgeInsets.all(8.0),
@@ -244,7 +268,7 @@ class _SingleCellState extends State<SingleCell>
                 child: SlideTransition(
                   position: Tween<Offset>(
                     begin: Offset.zero,
-                    end: Offset(2.0, 0.0),
+                    end: widget.offsetForAnim[widget.animDirection][1],
                   ).animate(_curveOut),
                   child: Padding(
                     padding: EdgeInsets.all(8.0),
