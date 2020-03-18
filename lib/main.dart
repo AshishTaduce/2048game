@@ -42,7 +42,7 @@ class _GameBoardState extends State<GameBoard>
     super.initState();
   }
 
-  String direction = '';
+  String direction = 'up';
 
   List<List<int>> board = [
     [0, 0, 0, 0],
